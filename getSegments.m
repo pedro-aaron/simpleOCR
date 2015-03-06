@@ -1,7 +1,9 @@
-function [segments] = getSegments(grayImage)
-    %% Debug mode
-    DEBUG=0;
-    
+function [segments] = getSegments(grayImage,DEBUG)
+    %% Valores por default
+    if nargin<2, 
+        DEBUG=0; 
+    end;    
+        
     %% Disminuyendo de brillo de la imagen
 %     grayImage = grayImage - 100;
 
@@ -24,20 +26,27 @@ function [segments] = getSegments(grayImage)
         title('Imagen en SIN bordes dilatados');        
     end
     
-    %% Dilatar regiones
+    %% Cerrar regiones
     %Se dilata las región pertenecientes a la letra segmentada.
-    dilatationFactor=5;
-    se = strel('disk',dilatationFactor);
-    dilatedImage = imdilate(segmentedImage,se);
+    closeFactor=4;
+    se = strel('disk',closeFactor);
+    closedImage = imclose(segmentedImage,se);    
+
+    %% Erosion de regiones
+    %Se dilata las región pertenecientes a la letra segmentada.
+    erodeFactor=4;
+    se = strel('disk',erodeFactor);
+    erodedImage = imerode(closedImage,se);
+
     
     %debug mode
     if DEBUG == 1,
-        figure; imshow(dilatedImage)
+        figure; imshow(erodedImage)
         title('Imagen en con bordes dilatados');        
     end
     
     %% Etiquetado de las regiones hallados
-    [regions, numObj] = bwlabel(dilatedImage);
+    [regions, numObj] = bwlabel(erodedImage);
         
     %% Se obtiene el Bounding Box de las regiones conectadas
     bBox = regionprops(regions, 'BoundingBox');
