@@ -1,12 +1,13 @@
+%http://watermarkero.blogspot.mx/
+%http://watermarkero.blogspot.mx/2015/03/reconocimiento-de-caracteres-usando.html
+%Reconocimiento de caracteres usando Matlab
+
 function [segments] = getSegments(grayImage,DEBUG)
     %% Valores por default
     if nargin<2, 
         DEBUG=0; 
     end;    
         
-    %% Disminuyendo de brillo de la imagen
-%     grayImage = grayImage - 100;
-
     %% Segmentación en regiones
     %Se segmenta la imagen en regiones, idealmente las regiones encontradas
     %son 2: el fondo y las letras mismas.
@@ -26,14 +27,19 @@ function [segments] = getSegments(grayImage,DEBUG)
         title('Imagen en SIN bordes dilatados');        
     end
     
+    %% Dilatar regiones
+    dilateFactor=3;
+    se = strel('disk',dilateFactor);
+    dilatedImage = imdilate(segmentedImage,se);   
+    
     %% Cerrar regiones
-    %Se dilata las región pertenecientes a la letra segmentada.
+    %Se cierran regiones.
     closeFactor=4;
     se = strel('disk',closeFactor);
-    closedImage = imclose(segmentedImage,se);    
+    closedImage = imclose(dilatedImage,se);    
 
     %% Erosion de regiones
-    %Se dilata las región pertenecientes a la letra segmentada.
+    %Se se erosiona la imagen.
     erodeFactor=4;
     se = strel('disk',erodeFactor);
     erodedImage = imerode(closedImage,se);
@@ -42,7 +48,7 @@ function [segments] = getSegments(grayImage,DEBUG)
     %debug mode
     if DEBUG == 1,
         figure; imshow(erodedImage)
-        title('Imagen en con bordes dilatados');        
+        title('Imagen en con bordes erosionados');                
     end
     
     %% Etiquetado de las regiones hallados
@@ -67,6 +73,7 @@ function [segments] = getSegments(grayImage,DEBUG)
             ceil(bBox(k).BoundingBox(1,1)) : floor(bBox(k).BoundingBox(1,1)) + floor(bBox(k).BoundingBox(1,3)));
         %se obtiene el centro
         segments(k).center = ceil(size(segments(k).image)/2);
+        segments(k).bBox = bBox(k).BoundingBox;
         %se obtiene el tamaño
         segments(k).size = size(segments(k).image);
         
