@@ -112,35 +112,30 @@ function [features] = getFeatures(img, DEBUG)
     end
     
     %% numero de end points
-%         figure; imshow(spur); title('spur')
         endPoints = bwmorph(spur,'endpoints');
-%         figure; imshow(endPoints); title('end points')
         branchpoints = bwmorph(spur,'branchpoints');
-%         figure; imshow(branchpoints); title('branch points')
-
         se = strel('disk',round(nFilas/12));
         endPoints_dilated = imdilate(endPoints,se);    
-%         figure; imshow(endPoints_dilated); title('endPoints dilated')
         branchpoints_dilated = imdilate(branchpoints,se);    
-%         figure; imshow(branchpoints_dilated); title('branch points dilated')
-
         stats = regionprops(endPoints_dilated, 'Area');
         nEndPoints = length(find([stats.Area]>10));
         
         features(cont) = nEndPoints;
         cont = cont + 1;
         
+     %% numero de branch points               
         stats = regionprops(branchpoints_dilated, 'Area');
         nBranchPoints = length(find([stats.Area]>10));
         features(cont) = nBranchPoints;
-%         disp(cont);
+        cont = cont + 1;
 
 
     %debug mode
     if DEBUG==1
-        figure;imshow(img); hold on;
-        plot(points.selectStrongest(10));
-        hold on
-        plot(centroid(1).Centroid(:,1), centroid(1).Centroid(:,2), 'b*')
+        figure; imshow(spur); title('spur')
+        figure; imshow(endPoints); title('end points')
+        figure; imshow(branchpoints); title('branch points')
+        figure; imshow(endPoints_dilated); title('endPoints dilated')
+        figure; imshow(branchpoints_dilated); title('branch points dilated')
     end
 end
